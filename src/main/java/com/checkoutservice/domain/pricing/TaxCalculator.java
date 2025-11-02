@@ -9,6 +9,6 @@ public class TaxCalculator extends AbstractPricingCalculator {
 
     @Override
     protected void apply(PricingContext ctx) {
-        ctx.tax = (ctx.subtotal - ctx.discounts) * (rate / 100.0);
+        ctx.tax = Math.max(0, ctx.subtotal - ctx.discounts) * (rate / 100.0);
     }
 }
