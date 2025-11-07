@@ -1,9 +1,11 @@
 package com.checkoutservice.domain.pricing;
 
 import com.checkoutservice.domain.cart.Cart;
-import com.checkoutservice.domain.cart.Item;
+import com.checkoutservice.domain.cart.CartItem;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.checkoutservice.domain.cart.Money;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -12,10 +14,9 @@ public class PriceCalculatorTests {
 
     @Test
     void pricing_context_test(){
-        Cart cart = new Cart(List.of(
-                new Item("T-shirt", 25.0),
-                new Item("Shoes", 60.0)
-        ));
+        Cart cart = new Cart("123", "EUR");
+        cart.addItem(new CartItem("T-shirt", 1, new Money(25.0, "EUR")));
+        cart.addItem(new CartItem("Shoes", 1, new Money(60.0, "EUR")));
 
         PricingContext pricingContext = new PricingContext(cart, "SAVE10");
 

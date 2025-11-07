@@ -1,10 +1,13 @@
 package com.checkoutservice.domain.pricing;
 
-import com.checkoutservice.domain.cart.Item;
+import com.checkoutservice.domain.cart.CartItem;
+
 public class BasePriceCalculator extends AbstractPricingCalculator {
     @Override
-    protected void apply(PricingContext ctx) {
-        
-        ctx.subtotal = ctx.cart.getItems().stream().mapToDouble(Item::getPrice).sum(); 
+    protected void apply(PricingContext pricingContext) {
+        pricingContext.subtotal = pricingContext.cart.getItems()
+                        .stream()
+                        .mapToDouble(cartItemIter -> cartItemIter.lineTotal().amount())
+                        .sum();
     }
 }
