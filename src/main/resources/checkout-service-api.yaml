@@ -155,7 +155,7 @@ components:
         couponCode: { type: string, example: WELCOME10, nullable: true }
         paymentProvider:
           type: string
-          description: MockPay | FailPay | CashOnDelivery | COD
+          description: MockPay | FailPay | CashOnDelivery | PaypalPay | CreditCardPay
           example: MockPay
       required: [cartId]
 
