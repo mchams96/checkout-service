@@ -52,7 +52,8 @@ public class CheckoutService {
     }
 
     public GetCartResult addItemToCart(String cartId, AddCartItemJob job) {
-        Money unitPrice = new Money(job.unitPrice(), "USD"); 
+        Cart cart = carts.get(cartId);
+        Money unitPrice = new Money(job.unitPrice(), cart.getCurrency()); 
         CartItem item = new CartItem(job.productId(), job.qty(), unitPrice);
 
         Cart updated = carts.addItem(cartId, item);
