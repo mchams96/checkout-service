@@ -1,8 +1,11 @@
 package com.checkoutservice.app;
 
+import java.util.List;
+
 import com.checkoutservice.app.beans.*;
 
 import com.checkoutservice.domain.cart.Cart;
+import com.checkoutservice.domain.cart.CartItem;
 import com.checkoutservice.domain.cart.CartRepository;
 import com.checkoutservice.domain.cart.Money;
 
@@ -42,6 +45,41 @@ public class CheckoutService {
 
     // ===== Cart handling =====
     // To be filled by Hamza
+    
+    public CreateCartResult createCart(CreateCartJob job) {
+        String cartId = carts.create(job.currency());
+        return new CreateCartResult(cartId);
+    }
+
+    public GetCartResult addItemToCart(String cartId, AddCartItemJob job) {
+        Cart cart = carts.get(cartId);
+        Money unitPrice = new Money(job.unitPrice(), cart.getCurrency()); 
+        CartItem item = new CartItem(job.productId(), job.qty(), unitPrice);
+
+        Cart updated = carts.addItem(cartId, item);
+
+        return convertToGetCartResult(updated);
+    }
+
+   
+    public GetCartResult getCart(String cartId) {
+        Cart cart = carts.get(cartId);
+        return convertToGetCartResult(cart);
+    }
+
+
+    private GetCartResult convertToGetCartResult(Cart cart) {
+        List<CartItemResult> items = cart.getItems().stream()
+                .map(ci -> new CartItemResult(
+                        ci.getProductID(),
+                        ci.getQuantity(),
+                        ci.getUnitPrice().amount(),
+                        ci.lineTotal().amount()
+                ))
+                .toList();
+
+        return new GetCartResult(cart.getId(), cart.getCurrency(), items);
+    }
 
 
     // ===== Checkout handling =====
