@@ -25,6 +25,12 @@ public class CheckoutController {
         return ResponseEntity.ok(createCartResult);
     }
 
+    @DeleteMapping("/carts/{id}")
+    public ResponseEntity<Void> deleteCart(@PathVariable("id") String cartId) {
+        service.deleteCart(cartId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/carts/{id}/items")
     public ResponseEntity<GetCartResult> addItem(@PathVariable String cartId, @RequestBody AddCartItemJob addCartItemJob) {
         GetCartResult updatedCart = service.addItemToCart(cartId, addCartItemJob);
@@ -47,5 +53,11 @@ public class CheckoutController {
     @GetMapping("/orders/{id}")
     public ResponseEntity<GetOrderResult> getOrder(@PathVariable String orderId) {
         return ResponseEntity.ok(service.getOrder(orderId));
+    }
+
+    @DeleteMapping("/orders/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable("id") String orderId) {
+        service.deleteOrder(orderId);
+        return ResponseEntity.noContent().build();
     }
 }

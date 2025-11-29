@@ -24,4 +24,9 @@ public class InMemoryOrderRepository implements OrderRepository {
 
         return foundOrder;
     }
+
+    @Override
+    public void delete(String orderId) {
+        orderByOrderId.remove(orderId);
+    }
 }
