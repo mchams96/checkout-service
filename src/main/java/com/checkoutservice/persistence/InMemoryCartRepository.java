@@ -2,11 +2,14 @@ package com.checkoutservice.persistence;
 
 import com.checkoutservice.domain.cart.*;
 
+import org.springframework.stereotype.Repository;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Repository
 public class InMemoryCartRepository implements CartRepository {
     private final Map<String, Cart> cartById = new HashMap<>();
 

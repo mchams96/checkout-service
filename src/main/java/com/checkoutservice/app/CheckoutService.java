@@ -1,7 +1,5 @@
 package com.checkoutservice.app;
 
-import java.util.List;
-
 import com.checkoutservice.app.beans.*;
 
 import com.checkoutservice.domain.cart.Cart;
@@ -21,7 +19,11 @@ import com.checkoutservice.domain.pricing.PricingContext;
 import com.checkoutservice.domain.pricing.TaxCalculator;
 import com.checkoutservice.domain.pricing.ShippingCalculator;
 
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+@Service
 public class CheckoutService {
 
     // ===== Instance variables =====

@@ -5,7 +5,7 @@
 
     <groupId>com.checkoutservice</groupId>
     <artifactId>checkout-service</artifactId>
-    <version>1.1.1</version>
+    <version>0.1.0</version>
     <name>Checkout API-first Service</name>
 
     <properties>
@@ -47,6 +47,17 @@
     <build>
         <finalName>checkout-service</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
