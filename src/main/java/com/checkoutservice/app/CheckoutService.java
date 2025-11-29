@@ -1,6 +1,7 @@
 package com.checkoutservice.app;
 
 import com.checkoutservice.app.beans.*;
+import com.checkoutservice.app.exceptions.*;
 
 import com.checkoutservice.domain.cart.Cart;
 import com.checkoutservice.domain.cart.CartItem;
@@ -55,7 +56,11 @@ public class CheckoutService {
 
     public GetCartResult addItemToCart(String cartId, AddCartItemJob job) {
         Cart cart = carts.get(cartId);
-        Money unitPrice = new Money(job.unitPrice(), cart.getCurrency()); 
+        if (cart == null) {
+            throw new CartNotFoundException(cartId);
+        }
+
+        Money unitPrice = new Money(job.unitPrice(), cart.getCurrency());
         CartItem item = new CartItem(job.productId(), job.qty(), unitPrice);
 
         Cart updated = carts.addItem(cartId, item);
@@ -63,12 +68,14 @@ public class CheckoutService {
         return convertToGetCartResult(updated);
     }
 
-   
     public GetCartResult getCart(String cartId) {
         Cart cart = carts.get(cartId);
+        if (cart == null) {
+            throw new CartNotFoundException(cartId);
+        }
+
         return convertToGetCartResult(cart);
     }
-
 
     private GetCartResult convertToGetCartResult(Cart cart) {
         List<CartItemResult> items = cart.getItems().stream()
@@ -83,11 +90,23 @@ public class CheckoutService {
         return new GetCartResult(cart.getId(), cart.getCurrency(), items);
     }
 
+    public void deleteCart(String cartId) {
+        Cart cart = carts.get(cartId);
+        if (cart == null) {
+            throw new CartNotFoundException(cartId);
+        }
+        
+        carts.delete(cartId);
+    }
+
 
     // ===== Checkout handling =====
 
     public CheckoutResult start(CheckoutJob checkoutJob) {
         Cart cart = carts.get(checkoutJob.cartId());
+        if (cart == null) {
+            throw new CartNotFoundException(checkoutJob.cartId());
+        }
 
         // Run pricing pipeline
         PricingContext pricingContext = calculator.calculate(new PricingContext(cart, checkoutJob.couponCode()));
@@ -132,6 +151,18 @@ public class CheckoutService {
 
     public GetOrderResult getOrder(String id) {
         var order = orders.get(id);
+        if (order == null) {
+            throw new OrderNotFoundException(id);
+        }
+
         return new GetOrderResult(order.getId(), order.amount().amount(), order.amount().currency(), order.stateName());
+    }
+
+    public void deleteOrder(String orderId) {
+        var order = orders.get(orderId);
+        if (order == null) {
+            throw new OrderNotFoundException(orderId);
+        }
+        orders.delete(orderId);
     }
 }

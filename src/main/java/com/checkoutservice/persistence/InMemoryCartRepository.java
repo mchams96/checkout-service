@@ -32,4 +32,9 @@ public class InMemoryCartRepository implements CartRepository {
         cart.addItem(item);
         return cart;
     }
+
+    @Override
+    public void delete(String cartId) {
+        cartById.remove(cartId);
+    }
 }
