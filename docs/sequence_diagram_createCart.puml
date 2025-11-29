@@ -1,0 +1,24 @@
+@startuml
+autonumber
+
+participant Client
+participant CheckoutController
+participant CheckoutService
+participant CartRepository
+
+' 0) HTTP request to controller with bean
+Client ->> CheckoutController: POST /carts\nBody: CreateCartJob
+CheckoutController ->> CheckoutService: createCart(createCartJob)
+
+' 1) Create cart in repository
+CheckoutService ->> CartRepository: create(job.currency())
+CartRepository -->> CheckoutService: cartId (String)
+
+' 2) Build CreateCartResult DTO
+CheckoutService ->> CheckoutService: result = new CreateCartResult(cartId)
+CheckoutService -->> CheckoutController: CreateCartResult
+
+' 3) HTTP response
+CheckoutController -->> Client: 200 OK\nBody: CreateCartResult
+
+@enduml

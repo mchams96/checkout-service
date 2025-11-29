@@ -1,0 +1,109 @@
+@startuml
+skinparam shadowing false
+skinparam defaultTextAlignment left
+
+skinparam rectangle {
+    RoundCorner 15
+    BorderColor #d8d2b8
+}
+
+left to right direction
+
+' ==== API LAYER ====
+rectangle "API Layer" as API_LAYER #eef1fd {
+    class CheckoutController {
+        +createCart(job: CreateCartJob)
+        +addItem(itemId: String, job: AddCartItemJob)
+        +getCart(cartId: String)
+        +startCheckout(job: CheckoutJob)
+        +getOrder(orderId: String)
+    }
+}
+
+' ==== APPLICATION LAYER ====
+rectangle "Application Layer" as APP_LAYER #f7f9e4 {
+
+    together {
+        class CheckoutService {
+            +createCart(job: CreateCartJob) : CreateCartResult
+            +addItemToCart(cartId: String, job: AddCartItemJob) : GetCartResult
+            +getCart(cartId: String) : GetCartResult
+            +start(job: CheckoutJob) : CheckoutResult
+            +getOrder(orderId: String) : GetOrderResult
+        }
+        class CreateCartResult
+        class GetOrderResult
+        class CreateCartJob
+        class AddCartItemJob
+        class CartItemResult
+        class GetCartResult
+        class CheckoutJob
+        class CheckoutResult
+    }
+}
+
+' ==== PERSISTENCE LAYER ====
+rectangle "Persistence Layer" as PERSIST_LAYER #eef1fd {
+    interface CartRepository
+    class InMemoryCartRepository
+
+    interface OrderRepository
+    class InMemoryOrderRepository
+}
+
+' ==== DOMAIN LAYER ====
+rectangle "Domain" as DOMAIN_LAYER #fffde8 {
+
+    rectangle "State Pattern" as STATE_BLOCK #ffffff {
+        together {
+            interface OrderState
+            class AwaitingPaymentState
+            class PaidState
+            class FailedState
+        }
+    }
+
+    rectangle "Payment Strategy" as PAYMENT_BLOCK #ffffff {
+        together {
+            interface PaymentStrategy
+            class PaypalPayStrategy
+            class CreditCardPayStrategy
+            class CashOnDeliveryStrategy
+        }
+    }
+
+    rectangle "Pricing Calculator" as PRICING_BLOCK #ffffff {
+        together {
+            abstract class AbstractPricingCalculator
+            class CouponCalculator
+            class TaxCalculator
+            class ShippingCalculator
+        }
+    }
+}
+
+' ==== Layer connections  ====
+CheckoutController --> CheckoutService
+
+CheckoutService --> CartRepository
+CheckoutService --> OrderRepository
+
+CartRepository --> InMemoryCartRepository
+OrderRepository --> InMemoryOrderRepository
+
+CheckoutService --> OrderState
+OrderState <|-- AwaitingPaymentState
+OrderState <|-- PaidState
+OrderState <|-- FailedState
+
+CheckoutService --> PaymentStrategy
+PaymentStrategy <|-- PaypalPayStrategy
+PaymentStrategy <|-- CreditCardPayStrategy
+PaymentStrategy <|-- CashOnDeliveryStrategy
+
+CheckoutService --> AbstractPricingCalculator
+AbstractPricingCalculator <|-- CouponCalculator
+AbstractPricingCalculator <|-- TaxCalculator
+AbstractPricingCalculator <|-- ShippingCalculator
+
+@enduml

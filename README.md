@@ -89,18 +89,25 @@ curl http://localhost:8080/orders/o_456
 
 ---
 
-## Class Diagrams
+## UML Diagrams
 
-### 1) Component / Layer Diagram
+### 1) Class Diagram
+![Class Diagram](docs/class_diagram.png)
 
-### 2) Class Diagram
+### 2) Component / Layer Diagram
+![Component Diagram](docs/component_layer_diagram.png)
 
-### 3) Sequence diagram (Start Checkout)
+### 3) Sequence Diagram (Start Checkout)
+![Start Checkout Sequence Diagram](docs/sequence_diagram_startCheckout.png)
 
-### 4) Sequence diagram (Create Cart)
+### 4) Sequence Diagram (Create Cart)
+![Create Cart Sequence Diagram](docs/sequence_diagram_createCart.png)
 
-### 5) Sequence diagram (Add Item)
+### 5) Sequence Diagram (Add Item)
+![Add Item Sequence Diagram](docs/sequence_diagram_addItem.png)
 
-### 6) Sequence diagram (Get Order)
+### 6) Sequence Diagram (Get Order)
+![Get Order Sequence Diagram](docs/sequence_diagram_getOrder.png)
 
-### 7) Sequence diagram (Get Cart)
+### 7) Sequence Diagram (Get Cart)
+![Get Cart Sequence Diagram](docs/sequence_diagram_getCart.png)

@@ -1,0 +1,61 @@
+@startuml
+autonumber
+
+participant Client
+participant CheckoutController
+participant CheckoutService
+participant CartRepository
+participant "PricingCalculator" as PricingCoR
+participant PaymentStrategy
+participant OrderRepository
+
+' 0) HTTP request to controller with bean
+Client ->> CheckoutController: POST /checkouts\nBody: CheckoutJob{cartId?, currency?, couponCode?, paymentProvider?}
+CheckoutController ->> CheckoutService: start(job: CheckoutJob)
+
+' 1) Load cart
+CheckoutService ->> CartRepository: get(job.cartId)
+CartRepository -->> CheckoutService: Cart
+
+' 2) Run pricing pipeline (Base → Coupon → Tax → Shipping)
+CheckoutService ->> PricingCoR: calculate( PricingContext(cart, job.couponCode) )
+activate PricingCoR
+note right of PricingCoR
+BasePrice → Coupon → Tax → Shipping
+end note
+PricingCoR -->> CheckoutService: {subtotal, discounts, tax, shipping, total}
+deactivate PricingCoR
+
+' 3) Create order (awaiting payment)
+CheckoutService ->> CheckoutService: currency = (job.currency != null ? job.currency : cart.currency)
+CheckoutService ->> CheckoutService: order = new Order( Money(total, currency) )
+
+' 4) Select payment strategy at runtime
+CheckoutService ->> CheckoutService: provider = (job.paymentProvider != null ? job.paymentProvider : "FailPay")
+
+alt provider == "PaypalPayStrategy"
+    CheckoutService ->> PaymentStrategy: instantiate PaypalPayStrategy
+else provider == "CashOnDelivery"
+    CheckoutService ->> PaymentStrategy: instantiate CashOnDeliveryStrategy
+else provider == "CreditCardPayStrategy"
+    CheckoutService ->> PaymentStrategy: instantiate CreditCardPayStrategy
+end
+
+' 5) Attempt payment
+CheckoutService ->> PaymentStrategy: pay(total)
+
+alt payment succeeded
+    PaymentStrategy -->> CheckoutService: true
+    CheckoutService ->> CheckoutService: order.onPaymentSucceeded()
+else payment failed
+    PaymentStrategy -->> CheckoutService: false
+    CheckoutService ->> CheckoutService: order.onPaymentFailed()
+end
+
+' 6) Persist order and respond
+CheckoutService ->> OrderRepository: save(order)
+OrderRepository -->> CheckoutService: ok
+CheckoutService -->> CheckoutController: CheckoutResult{orderId,state,total,provider}
+CheckoutController -->> Client: 201 Created\nBody: CheckoutResult
+
+@enduml

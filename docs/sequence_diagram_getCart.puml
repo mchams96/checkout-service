@@ -1,0 +1,27 @@
+@startuml
+autonumber
+
+participant Client
+participant CheckoutController
+participant CheckoutService
+participant CartRepository
+
+' 0) HTTP request
+Client ->> CheckoutController: GET /carts/{cartId}
+CheckoutController ->> CheckoutService: getCart(cartId)
+
+' 1) Load cart from repository
+CheckoutService ->> CartRepository: get(cartId)
+CartRepository -->> CheckoutService: Cart
+
+' 2) Convert Cart -> GetCartResult
+CheckoutService ->> CheckoutService: result = convertToGetCartResult(cart)
+note right of CheckoutService
+convertToGetCartResult(cart): GetCartResult
+end note
+CheckoutService -->> CheckoutController: GetCartResult
+
+' 3) HTTP response
+CheckoutController -->> Client: 200 OK\nBody: GetCartResult
+
+@enduml

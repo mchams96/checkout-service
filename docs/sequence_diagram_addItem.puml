@@ -1,0 +1,35 @@
+@startuml
+autonumber
+
+participant Client
+participant CheckoutController
+participant CheckoutService
+participant CartRepository
+
+' 0) HTTP request to controller with bean
+Client ->> CheckoutController: POST /carts/{cartId}/items\nBody: AddCartItemJob
+CheckoutController ->> CheckoutService: addItemToCart(cartId, addCartItemJob)
+
+' 1) Load existing cart
+CheckoutService ->> CartRepository: get(cartId)
+CartRepository -->> CheckoutService: Cart
+
+' 2) Build domain objects (Money, CartItem)
+CheckoutService ->> CheckoutService: unitPrice = new Money(job.unitPrice(), cart.getCurrency())
+CheckoutService ->> CheckoutService: item = new CartItem(job.productId(), job.qty(), unitPrice)
+
+' 3) Persist updated cart
+CheckoutService ->> CartRepository: addItem(cartId, item)
+CartRepository -->> CheckoutService: updatedCart
+
+' 4) Convert to GetCartResult DTO
+CheckoutService ->> CheckoutService: result = convertToGetCartResult(updatedCart)
+note right of CheckoutService
+convertToGetCartResult(cart): GetCartResult
+end note
+CheckoutService -->> CheckoutController: GetCartResult
+
+' 5) HTTP response
+CheckoutController -->> Client: 200 OK\nBody: GetCartResult
+
+@enduml

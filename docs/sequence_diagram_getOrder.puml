@@ -1,0 +1,24 @@
+@startuml
+autonumber
+
+participant Client
+participant CheckoutController
+participant CheckoutService
+participant OrderRepository
+
+' 0) HTTP request
+Client ->> CheckoutController: GET /orders/{orderId}
+CheckoutController ->> CheckoutService: getOrder(orderId)
+
+' 1) Load order from repository
+CheckoutService ->> OrderRepository: get(id)
+OrderRepository -->> CheckoutService: Order
+
+' 2) Build GetOrderResult DTO
+CheckoutService ->> CheckoutService: result = new GetOrderResult(order.getId(), order.amount().amount(), order.amount().currency(), order.stateName())
+CheckoutService -->> CheckoutController: GetOrderResult
+
+' 3) HTTP response
+CheckoutController -->> Client: 200 OK\nBody: GetOrderResult
+
+@enduml
