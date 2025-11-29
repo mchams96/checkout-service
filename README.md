@@ -1,7 +1,9 @@
-# Checkout API-first Service
-=======
 
-## About
+# Checkout API-first Service
+
+---
+
+## ❓ About
 A lightweight **checkout service** built with **Java (Spring Boot)**, following clean architecture principles and documented with an **OpenAPI Specification**.  
 It demonstrates a modular approach to cart, checkout, payment, and order management with in-memory persistence for easy demo and testing.
 
@@ -11,31 +13,94 @@ It demonstrates a modular approach to cart, checkout, payment, and order managem
 - **Cart Management** – create carts, add items, view contents
 - **Checkout Flow** – compute totals with coupons, tax, shipping
 - **Order Lifecycle** – track order states (`AwaitingPayment`, `Paid`, `Failed`)
-- **Payment Providers** – configurable providers (`MockPay`, `FailPay`, `CashOnDelivery`)
+- **Payment Providers** – configurable providers (`CreditCardPay`, `PaypalPay`, `CashOnDelivery`)
 - **API-First** – documented with an **OpenAPI Specification (openapi.yaml)**
 - **In-Memory Persistence** – quick demo setup, easily swappable for a database
 
 ---
 
-## Project structure
+## 📂 Project structure
 ```
-checkout-service/
-├─ src/main/
-│  ├─ java/com/checkoutservice/
-│  │  ├─ api/			# API Layer (Controllers / REST endpoints)
-│  │  ├─ app/       	# Application Layer (Orchestration)
-│  │  ├─ domain/		# Core business logic
-│  │  │  ├─ cart/
-│  │  │  ├─ order/
-│  │  │  ├─ pricing/
-│  │  │  └─ payment/
-│  │  └─ persistence/	# Persistance Layer (Infra / Repository contracts)
+📂 checkout-service/
+├─ 📂 src/main/
+│  ├─ 📂 java/com/checkoutservice/
+│  │  ├─ 📂 api/             # API Layer (Controllers / REST endpoints)
+│  │  ├─ 📂 app/             # Application Layer (Orchestration)
+│  │  │  └─ 📂 beans/        # request/response models
+│  │  ├─ 📂 domain/          # Core business logic
+│  │  │  ├─ 📂 cart/
+│  │  │  ├─ 📂 order/
+│  │  │  ├─ 📂 pricing/
+│  │  │  └─ 📂 payment/
+│  │  └─ 📂 persistence/     # Persistance Layer (Infra / Repository contracts)
 │  │
+│  ├─ 📂 resources/
+│  │  ├─ openapi.yaml         # API contract
+│  │  └─ application.properties
+│  
 ├─ pom.xml
 └─ README.md
 ```
 
-## Build
+---
+
+## 📦 Build and package
 ```
 mvn clean package
 ```
+
+---
+
+## 💻 Launching the service
+We need to launch the jar generated above.
+```
+java -jar target/checkout-service.jar
+```
+⚠️ Service is live at http://localhost:8080
+
+---
+
+## API Quickstart (How to demo - using curl) -- TO-DO fix this section
+Example requests using cURL:
+```
+# 1. Create a cart
+curl -X POST http://localhost:8080/carts \
+  -H "Content-Type: application/json" \
+  -d '{"currency":"USD"}'
+
+# sample responce: { "cartId": "c_123" }
+ 
+# 2. Add item
+curl -X POST http://localhost:8080/carts/c_123/items \
+  -H "Content-Type: application/json" \
+  -d '{"productId":"prod-101","qty":2,"unitPrice":10.0}'
+
+# 3. View Cart
+curl http://localhost:8080/carts/c_123
+
+# 4. Start checkout
+curl -X POST http://localhost:8080/checkouts \
+  -H "Content-Type: application/json" \
+  -d '{"cartId":"c_123","currency":"USD","couponCode":"WELCOME10","paymentProvider":"MockPay"}'
+
+# 4. Get order
+curl http://localhost:8080/orders/o_456
+```
+
+---
+
+## Class Diagrams
+
+### 1) Component / Layer Diagram
+
+### 2) Class Diagram
+
+### 3) Sequence diagram (Start Checkout)
+
+### 4) Sequence diagram (Create Cart)
+
+### 5) Sequence diagram (Add Item)
+
+### 6) Sequence diagram (Get Order)
+
+### 7) Sequence diagram (Get Cart)
