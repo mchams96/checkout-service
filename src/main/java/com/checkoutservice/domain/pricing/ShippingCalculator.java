@@ -1,16 +1,19 @@
 package com.checkoutservice.domain.pricing;
 
 public class ShippingCalculator extends AbstractPricingCalculator {
-    private final double shipping;
-    private final double freeThreshold;
+    private final Double shipping;
+    private final Double freeThreshold;
 
-    public ShippingCalculator(double shipping, double freeThreshold) {
+    public ShippingCalculator(Double shipping, Double freeThreshold) {
         this.shipping = shipping;
         this.freeThreshold = freeThreshold;
     }
 
     @Override
     protected void apply(PricingContext ctx) {
-        ctx.shipping = ctx.subtotal >= freeThreshold ? 0 : shipping;
+        double shippingValue = (shipping != null ? shipping : 0);
+        double thresholdValue = (freeThreshold != null ? freeThreshold : 0);
+
+        ctx.shipping = ctx.subtotal >= thresholdValue  ? 0 : shippingValue;
     }
 }

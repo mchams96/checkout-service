@@ -31,15 +31,6 @@ public class CheckoutService {
     private final CartRepository carts;
     private final OrderRepository orders;
 
-    // TODO: I think we should move the details to the CheckoutJob bean.
-    // Vendor specifies the applicable tax, the shipping cost, the applicable coupons, etc.
-    // Lets keep it like that for now, for demo purposes.
-    private final PricingCalculator calculator =
-            new BasePriceCalculator()
-                    .setNext(new CouponCalculator())
-                    .setNext(new TaxCalculator(0.15))
-                    .setNext(new ShippingCalculator(5.0, 50.0));
-
     // // ===== Constructor =====
     public CheckoutService(CartRepository carts, OrderRepository orders) {
         this.carts = carts;
@@ -47,8 +38,6 @@ public class CheckoutService {
     }
 
     // ===== Cart handling =====
-    // To be filled by Hamza
-    
     public CreateCartResult createCart(CreateCartJob job) {
         String cartId = carts.create(job.currency());
         return new CreateCartResult(cartId);
@@ -107,6 +96,16 @@ public class CheckoutService {
         if (cart == null) {
             throw new CartNotFoundException(checkoutJob.cartId());
         }
+
+        // Build pricing chain of commands dynamically per request
+        PricingCalculator calculator =
+                new BasePriceCalculator()
+                        .setNext(new CouponCalculator(checkoutJob.coupons()))
+                        .setNext(new TaxCalculator(checkoutJob.taxRate()))
+                        .setNext(new ShippingCalculator(
+                                checkoutJob.shippingCost(),
+                                checkoutJob.shippingThreshold()
+                        ));
 
         // Run pricing pipeline
         PricingContext pricingContext = calculator.calculate(new PricingContext(cart, checkoutJob.couponCode()));
