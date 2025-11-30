@@ -26,20 +26,20 @@ public class CheckoutController {
     }
 
     @DeleteMapping("/carts/{id}")
-    public ResponseEntity<Void> deleteCart(@PathVariable("id") String cartId) {
-        service.deleteCart(cartId);
+    public ResponseEntity<Void> deleteCart(@PathVariable("id") String id) {
+        service.deleteCart(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/carts/{id}/items")
-    public ResponseEntity<GetCartResult> addItem(@PathVariable String cartId, @RequestBody AddCartItemJob addCartItemJob) {
-        GetCartResult updatedCart = service.addItemToCart(cartId, addCartItemJob);
+    public ResponseEntity<GetCartResult> addItem(@PathVariable("id") String id, @RequestBody AddCartItemJob addCartItemJob) {
+        GetCartResult updatedCart = service.addItemToCart(id, addCartItemJob);
         return ResponseEntity.ok(updatedCart);
     }
 
     @GetMapping("/carts/{id}")
-    public ResponseEntity<GetCartResult> getCart(@PathVariable String cartId) {
-        return ResponseEntity.ok(service.getCart(cartId));
+    public ResponseEntity<GetCartResult> getCart(@PathVariable("id") String id) {
+        return ResponseEntity.ok(service.getCart(id));
     }
 
     // --- Checkout ---
@@ -51,13 +51,13 @@ public class CheckoutController {
 
     // --- Orders ---
     @GetMapping("/orders/{id}")
-    public ResponseEntity<GetOrderResult> getOrder(@PathVariable String orderId) {
-        return ResponseEntity.ok(service.getOrder(orderId));
+    public ResponseEntity<GetOrderResult> getOrder(@PathVariable("id") String id) {
+        return ResponseEntity.ok(service.getOrder(id));
     }
 
     @DeleteMapping("/orders/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable("id") String orderId) {
-        service.deleteOrder(orderId);
+    public ResponseEntity<Void> deleteOrder(@PathVariable("id") String id) {
+        service.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
 }
