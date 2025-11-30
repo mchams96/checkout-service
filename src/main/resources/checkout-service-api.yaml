@@ -150,14 +150,41 @@ components:
     CheckoutJob:
       type: object
       properties:
-        cartId: { type: string, example: "c_123" }
-        currency: { type: string, example: USD, nullable: true }
-        couponCode: { type: string, example: WELCOME10, nullable: true }
+        cartId:
+          type: string
+          example: "c_123"
+        currency:
+          type: string
+          example: USD
+          nullable: true
+        couponCode:
+          type: string
+          example: WELCOME10
+          nullable: true
         paymentProvider:
           type: string
-          description: MockPay | FailPay | CashOnDelivery | PaypalPay | CreditCardPay
-          example: MockPay
-      required: [cartId]
+          description: CashOnDelivery | PaypalPay | CreditCardPay | FailPay
+          example: CreditCardPay
+        coupons:
+          type: array
+          description: Additional coupon codes
+          items:
+            type: string
+          example: ["WELCOME10", "VIP10"]
+        taxRate:
+          type: double
+          description: Tax percentage (e.g. 15 = 15%)
+          example: 15
+        shippingCost:
+          type: double
+          description: Flat shipping cost
+          example: 5
+        shippingThreshold:
+          type: double
+          description: Free-shipping threshold
+          example: 50
+      required:
+        - cartId
 
     # ---- Responses (Results) ----
     CreateCartResult:
@@ -212,7 +239,7 @@ components:
           example: 18.0
         provider:
           type: string
-          example: MockPay
+          example: CreditCardPay
       required: [orderId, state, total, provider]
 
     GetOrderResult:

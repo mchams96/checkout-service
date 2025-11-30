@@ -21,9 +21,9 @@ public class PriceCalculatorTests {
         PricingContext pricingContext = new PricingContext(cart, "SAVE10");
 
         PricingCalculator pricingCalculator = new BasePriceCalculator();
-        pricingCalculator.setNext(new CouponCalculator())
-                    .setNext(new TaxCalculator(8))
-                    .setNext(new ShippingCalculator(5, 100));
+        pricingCalculator.setNext(new CouponCalculator(List.of("SAVE10", "WIN10")))
+                    .setNext(new TaxCalculator(8.0))
+                    .setNext(new ShippingCalculator(5.0, 100.0));
 
         pricingCalculator.calculate(pricingContext);
         pricingContext.finalizeTotals();
