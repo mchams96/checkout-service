@@ -37,10 +37,22 @@ It demonstrates a modular approach to cart, checkout, payment, and order managem
 │  ├─ 📂 resources/
 │  │  ├─ openapi.yaml         # API contract
 │  │  └─ application.properties
-│  
+│  │
+│  ├─ 📂 docs/                # UML diagrams
+│  │
 ├─ pom.xml
 └─ README.md
 ```
+
+---
+
+## 📄 API Specification
+
+This project includes a full **OpenAPI specification** describing all REST endpoints, request/response models, and error structures.
+
+**OpenAPI file:** ["src/main/resources/checkout-service-api.yaml"](src/main/resources/checkout-service-api.yaml)
+
+You can view the specification using Swagger UI (online): https://editor.swagger.io
 
 ---
 
@@ -60,7 +72,9 @@ java -jar target/checkout-service.jar
 
 ---
 
-## API Quickstart (How to demo - using curl) -- TO-DO fix this section
+## API Quickstart (using cURL)
+⚠️ Note: Recommended to use Git Bash
+
 Example requests using cURL:
 ```
 # 1. Create a cart
@@ -81,15 +95,25 @@ curl http://localhost:8080/carts/c_123
 # 4. Start checkout
 curl -X POST http://localhost:8080/checkouts \
   -H "Content-Type: application/json" \
-  -d '{"cartId":"c_123","currency":"USD","couponCode":"WELCOME10","paymentProvider":"MockPay"}'
+  -d '{
+    "cartId": "c_123",
+    "currency": "USD",
+    "couponCode": "WELCOME10",
+    "coupons": ["WELCOME10", "VIP15"],
+    "taxRate": 0.15,
+    "shippingCost": 5.0,
+    "shippingThreshold": 50.0,
+    "paymentProvider": "CreditCardPay"
+  }'
 
-# 4. Get order
+# 5. Get order
 curl http://localhost:8080/orders/o_456
 ```
 
 ---
 
 ## UML Diagrams
+All high quality diagrams can be found under [Docs Directory](docs)
 
 ### 1) Class Diagram
 ![Class Diagram](docs/class_diagram.png)
