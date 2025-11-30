@@ -1,0 +1,243 @@
+@startuml
+
+' ==== API ====
+class CheckoutController {
+  +CheckoutController(service: CheckoutService)
+  +createCart(job: CreateCartJob): ResponseEntity~CreateCartResult~
+  +addItem(id: String, job: AddCartItemJob): ResponseEntity~GetCartResult~
+  +getCart(id: String): ResponseEntity~GetCartResult~
+  +startCheckout(job: CheckoutJob): ResponseEntity~CheckoutResult~
+  +getOrder(id: String): ResponseEntity~GetOrderResult~
+}
+
+' ==== Application (Service + Beans) ====
+class CheckoutService {
+  -carts: CartRepository
+  -orders: OrderRepository
+  -calculator: PricingCalculator
+  +CheckoutService(carts: CartRepository, orders: OrderRepository)
+  +createCart(job: CreateCartJob): CreateCartResult
+  +addItemToCart(cartId: String, job: AddCartItemJob): GetCartResult
+  +getCart(cartId: String): GetCartResult
+  +start(job: CheckoutJob): CheckoutResult
+  +getOrder(orderId: String): GetOrderResult
+}
+
+' ==== beans (Requests/Responses) ====
+class CreateCartJob {
+  +currency : String
+}
+
+class CreateCartResult {
+  +cartId : String
+}
+
+class AddCartItemJob {
+      +productId: String
+      +qty: int
+      +unitPrice: double
+}
+
+class CartItemResult {
+       +productId: String
+       +qty: int
+       +unitPrice: double
+       +lineTotal: double
+}
+
+class GetCartResult {
+      +id: String
+      +currency: String
+      +items: List<CartItemResult>
+}
+
+class CheckoutJob {
+  +cartId: String
+  +currency: String
+  +couponCode: String
+  +paymentProvider: String
+}
+
+class CheckoutResult {
+      +orderId: String
+      +state: String
+      +total: double
+      +provider: String
+}
+
+class GetOrderResult {
+      +id: String
+      +amount: double
+      +currency: String
+      +state: String
+}
+
+' ==== Domain - Cart ====
+class Money {
+  -amount: double
+  -currency: String
+  +Money(amount: double, currency: String)
+  +amount(): double
+  +currency(): String
+  +plus(o: Money): Money
+  +minus(o: Money): Money
+  +percent(p: double): Money
+}
+
+class CartItem {
+  +productId: String
+  +qty: int
+  +unitPrice: Money
+  +lineTotal(): Money
+}
+
+class Cart {
+  -id: String
+  -currency: String
+  -items: List<CartItem>
+  +Cart(id: String, currency: String)
+  +getId(): String
+  +getCurrency(): String
+  +getItems(): List<CartItem>
+  +addItem(item: CartItem): void
+}
+
+interface CartRepository {
+  +create(currency: String): String
+  +get(id: String): Cart
+  +addItem(id: String, item: CartItem): Cart
+}
+
+' Ownership and relations:
+Cart "1" o-- "*" CartItem
+CartItem *-- Money
+
+' ==== Domain - Order ====
+class Order {
+  -id: String
+  -amount: Money
+  -state: OrderState
+  +Order(amount: Money)
+  +getId(): String
+  +amount(): Money
+  +stateName(): String
+  +onPaymentSucceeded(): void
+  +onPaymentFailed(): void
+}
+
+interface OrderState {
+  +paymentSucceeded(): OrderState
+  +paymentFailed(): OrderState
+  +name(): String
+}
+
+class AwaitingPaymentState
+class PaidState
+class FailedState
+
+interface OrderRepository {
+  +save(order: Order): void
+  +get(id: String): Order
+}
+
+' Ownership and relations:
+Order *-- Money
+Order *-- OrderState
+OrderState <|.. AwaitingPaymentState
+OrderState <|.. PaidState
+OrderState <|.. FailedState
+
+' ==== Domain - Pricing ====
+class PricingContext {
+  +cart: Cart
+  +coupon: String
+  +subtotal: double
+  +discounts: double
+  +tax: double
+  +shipping: double
+  +total: double
+  +PricingContext(cart: Cart, coupon: String)
+  +finalizeTotals(): void
+}
+
+interface PricingCalculator {
+  +setNext(next: PricingCalculator): PricingCalculator
+  +calculate(ctx: PricingContext): PricingContext
+}
+
+abstract AbstractPricingCalculator {
+  #next: PricingCalculator
+  #apply(ctx: PricingContext): void
+  +setNext(next: PricingCalculator): PricingCalculator
+  +calculate(ctx: PricingContext): PricingContext
+}
+
+class BasePriceCalculator {
+  +apply(ctx: PricingContext): void
+}
+
+class CouponCalculator {
+  +apply(ctx: PricingContext): void
+}
+
+class TaxCalculator {
+  -rate: double
+  +TaxCalculator(rate: double)
+  +apply(ctx: PricingContext): void
+}
+
+class ShippingCalculator {
+  -shipping: double
+  -freeThreshold: double
+  +ShippingCalculator(shipping: double, freeThreshold: double)
+  +apply(ctx: PricingContext): void
+}
+
+' Ownership and relations:
+PricingCalculator <|.. AbstractPricingCalculator
+AbstractPricingCalculator <|-- BasePriceCalculator
+AbstractPricingCalculator <|-- CouponCalculator
+AbstractPricingCalculator <|-- TaxCalculator
+AbstractPricingCalculator <|-- ShippingCalculator
+
+' ==== Domain - Payment ====
+interface PaymentStrategy {
+  +pay(amount: double): boolean
+  +name(): String
+}
+
+class PaypalPayStrategy
+class CreditCardPayStrategy
+class CashOnDeliveryStrategy
+
+' Ownership and relations:
+PaymentStrategy <|.. PaypalPayStrategy
+PaymentStrategy <|.. CreditCardPayStrategy
+PaymentStrategy <|.. CashOnDeliveryStrategy
+
+' ==== Persistence ====
+class InMemoryCartRepository {
+  -db: Map<String, Cart>
+  +create(currency: String): String
+  +get(id: String): Cart
+  +addItem(id: String, item: CartItem): Cart
+}
+
+class InMemoryOrderRepository {
+  -db: Map<String, Order>
+  +save(order: Order): void
+  +get(id: String): Order
+}
+
+' Ownership and relations:
+CartRepository <|.. InMemoryCartRepository
+OrderRepository <|.. InMemoryOrderRepository
+
+' ==== Relationships across layers ====
+CheckoutController --> CheckoutService
+CheckoutService --> CartRepository
+CheckoutService --> OrderRepository
+CheckoutService --> PricingCalculator
+CheckoutService --> PaymentStrategy
+
+@enduml
