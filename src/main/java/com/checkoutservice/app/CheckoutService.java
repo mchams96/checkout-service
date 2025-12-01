@@ -13,12 +13,7 @@ import com.checkoutservice.domain.order.OrderRepository;
 
 import com.checkoutservice.domain.payment.*;
 
-import com.checkoutservice.domain.pricing.BasePriceCalculator;
-import com.checkoutservice.domain.pricing.CouponCalculator;
-import com.checkoutservice.domain.pricing.PricingCalculator;
-import com.checkoutservice.domain.pricing.PricingContext;
-import com.checkoutservice.domain.pricing.TaxCalculator;
-import com.checkoutservice.domain.pricing.ShippingCalculator;
+import com.checkoutservice.domain.pricing.*;
 
 import org.springframework.stereotype.Service;
 
@@ -98,17 +93,15 @@ public class CheckoutService {
         }
 
         // Build pricing chain of commands dynamically per request
-        PricingCalculator calculator =
-                new BasePriceCalculator()
-                        .setNext(new CouponCalculator(checkoutJob.coupons()))
-                        .setNext(new TaxCalculator(checkoutJob.taxRate()))
-                        .setNext(new ShippingCalculator(
-                                checkoutJob.shippingCost(),
-                                checkoutJob.shippingThreshold()
-                        ));
+        PricingCalculator calculator = new PricingCalculatorBuilder()
+                .withCoupons(checkoutJob.coupons())
+                .withShipping(checkoutJob.shippingCost(), checkoutJob.shippingThreshold())
+                .withTaxRate(checkoutJob.taxRate())
+                .build();
 
         // Run pricing pipeline
         PricingContext pricingContext = calculator.calculate(new PricingContext(cart, checkoutJob.couponCode()));
+        pricingContext.finalizeTotals();
 
         // Determine currency (prefer request; fallback to cart)
         String currency = (checkoutJob.currency() == null || checkoutJob.currency().isBlank())
@@ -136,7 +129,7 @@ public class CheckoutService {
         return new CheckoutResult(order.getId(), order.stateName(), pricingContext.total, strategy.name());
     }
 
-    // TODO: add exception, and exception handling. After that, Fail and Mock payments should be removed.
+    // TODO? add exception, and exception handling. After that, Fail and Mock payments should be removed.
     private PaymentStrategy resolvePaymentStrategy(String providerName){
         return switch (providerName) {
             case "COD", "CashOnDelivery" -> new CashOnDeliveryStrategy();
