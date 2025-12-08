@@ -1,12 +1,12 @@
 package com.checkoutservice.persistence;
 
+import com.checkoutservice.app.exceptions.OrderNotFoundException;
 import com.checkoutservice.domain.order.*;
 
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 
 @Repository
 public class InMemoryOrderRepository implements OrderRepository {
@@ -16,10 +16,10 @@ public class InMemoryOrderRepository implements OrderRepository {
         orderByOrderId.put(order.getId(), order);
     }
 
-    public Order get(String orderId) throws NoSuchElementException {
+    public Order get(String orderId) throws OrderNotFoundException {
         Order foundOrder = orderByOrderId.get(orderId);
         if (foundOrder == null){
-            throw new NoSuchElementException("Order not found: " + orderId);
+            throw new OrderNotFoundException("Order not found: " + orderId);
         }
 
         return foundOrder;
