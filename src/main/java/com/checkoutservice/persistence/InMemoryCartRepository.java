@@ -1,12 +1,12 @@
 package com.checkoutservice.persistence;
 
+import com.checkoutservice.app.exceptions.CartNotFoundException;
 import com.checkoutservice.domain.cart.*;
 
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Repository
@@ -19,10 +19,10 @@ public class InMemoryCartRepository implements CartRepository {
         return id;
     }
 
-    public Cart get(String cartId) throws NoSuchElementException {
+    public Cart get(String cartId) throws CartNotFoundException {
         Cart foundCart = cartById.get(cartId);
         if (foundCart == null){
-            throw new NoSuchElementException("Cart not found: " + cartId);
+            throw new CartNotFoundException("Cart not found: " + cartId);
         }
         return foundCart;
     }
